@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Рецепты{% endblock %}
+
+{% block styles %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'pages/index.css' %}">
+{% endblock %}
+
+{% block content %}
+    <main class="main container">
+        <div class="main__header">
+            <h1 class="main__title">{{ page.get_full_name }}</h1>
+        </div>
+        <div class="card-list">
+            {% for card in object.recipe.all %}
+                {% include 'recipe_cards.html' with card=card %}
+            {% endfor %}
+        </div>
+    </main>
+    {% include 'includes/paginator.html' with page=object_list paginator=paginator %}
+{% endblock %}
+
+{% block javascript %}
+    {% load static %}
+      <script src="./js/components/MainCards.js"></script>
+      <script src="./js/components/Purchases.js"></script>
+      <script src="./js/components/Favorites.js"></script>
+      <script src="./js/components/Subscribe.js"></script>
+      <script src="./js/config/config.js"></script>
+      <script src="./js/components/AuthorRecipe.js"></script>
+      <script src="./js/components/Header.js"></script>
+      <script src="./js/api/Api.js"></script>
+      <script src="authorRecipe.js"></script>
+{% endblock %}

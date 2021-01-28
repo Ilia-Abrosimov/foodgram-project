@@ -5,7 +5,11 @@ __pycache__/
 
 # C extensions
 *.so
-
+media/
+sent_emails/
+static/
+staticfiles/
+ingredients.csv
 # Distribution / packaging
 .Python
 build/

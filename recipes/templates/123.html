@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% for hui in page %}
+    {{hui}}
+    {{hui.id}}
+        {% for recipe in hui.author.recipe.all %}
+        <p>{{ recipe.title }}
+        {{ recipe.time }}</p>
+    {% endfor %}
+{% endfor %}
+</body>
+</html>

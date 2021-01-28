@@ -1,0 +1,5 @@
+Django==2.2
+Pillow==8.1.0
+pytz==2020.5
+sorl-thumbnail==12.7.0
+sqlparse==0.4.1
