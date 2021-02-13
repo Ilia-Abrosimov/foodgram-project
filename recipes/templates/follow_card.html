@@ -20,12 +20,13 @@
             {% endfor %}
             {% if card.author.recipe.count > 3 %}
                 <li class="card-user__item">
-                    <a href="{% url 'profile' username=card.author.username %}" class="card-user__link link">Еще {{ card.author.recipe.count|subtract:'3' }} рецептов...</a>
+                    <a href="{% url 'profile' user_id=card.author.id %}" class="card-user__link link">Еще {{ card.author.recipe.count|subtract:'3' }} рецептов...</a>
                 </li>
             {% endif %}
         </ul>
     </div>
     <div class="card-user__footer">
+        {% csrf_token %}
         <button class="button button_style_light-blue button_size_auto" name="subscribe">Отписаться</button>
     </div>
 </div>

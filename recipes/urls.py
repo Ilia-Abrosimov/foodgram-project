@@ -2,14 +2,21 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from .views import RecipesListView, RecipeView, ProfileView, follow_index, favorites
+from .views import (index, recipe_detail, profile, follow_index,
+                    favorite_index, shoplistview, new_recipe, subscription,
+                    delete_subscription)
 
 urlpatterns = [
-    path('', RecipesListView.as_view(), name='index'),
-    path('recipes/<int:pk>/', RecipeView.as_view(), name='recipe'),
-    path('users/<str:username>/', ProfileView.as_view(), name='profile'),
-    path('subscriptions/', follow_index, name='subscription'),
-    path('favorites/', favorites, name='favorite'),
+    path('', index, name='index'),
+    path('recipes/<int:recipe_id>/', recipe_detail, name='recipe'),
+    path('users/<int:user_id>', profile, name='profile'),
+    path('follows', follow_index, name='follows'),
+    path('subscriptions', subscription, name='subscription'),
+    path('subscriptions/<int:author_id>', delete_subscription,
+         name='delete_subscription'),
+    path('favorites/', favorite_index, name='favorite'),
+    path('purchases/', shoplistview, name='purchases'),
+    path('new/', new_recipe, name='new'),
 ]
 
 if settings.DEBUG:

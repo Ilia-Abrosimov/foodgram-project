@@ -1,29 +1,27 @@
-{% block content %}
-    {% load thumbnail user_filters %}
-    {% csrf_token %}
-    <div class="card" data-id="{{ card.id }}">
-        <a href="{% url 'recipe' pk=card.id %}" class="link">
-            {% thumbnail card.image "364x240" crop="center" upscale=True as im %}
-            <img src="{{ im.url }}" alt="{{ card.name }}" width="100%" height="{{ im.height}}" class="card__image">
-            {% endthumbnail %}
-        </a>
-        <div class="card__body">
-            <a class="card__title link" href="{% url 'recipe' pk=card.id %}">{{ card.title }}</a>
-            <ul class="card__items">
-                {% for tag in card.tags.all %}
-                <li class="card__item"><span class="badge badge_style_{{ tag }}">{{ tag.title }}</span></li>
-                {% endfor %}
-            </ul>
-            <div class="card__items card__items_column">
-                <p class="card__text"><span class="icon-time"></span> {{ card.time }} мин.</p>
-                <p class="card__text"><span class="icon-user"></span> <a href="{% url 'profile' username=card.author.username %}" style="color: black">{{ card.author.get_full_name }}</a></p>
-            </div>
-        </div>
-        <div class="card__footer">
-            {% if request.user.is_authenticated %}
-                <button class="button button_style_light-blue" name="purchpurchases" {% if card not in purchase_list %}data-out{% endif %}><span class="{% if card in purchase_list %}icon-check{% else %}icon-plus{% endif %} button__icon"></span>{% if card in purchase_list %}Рецепт добавлен{% else %}Добавить в покупки{% endif %}</button>
-                <button class="button button_style_none" name="favorites"{% if card not in favorites %} data-out{% endif %}><span class="icon-favorite{% if card in favorites %} icon-favorite_active{% endif %}"></span></button>
-            {% endif %}
+{% load thumbnail user_filters %}
+{% csrf_token %}
+<div class="card" data-id="{{ card.id }}">
+    <a href="{% url 'recipe' recipe_id=card.id %}" class="link">
+        {% thumbnail card.image "364x240" crop="center" upscale=True as im %}
+        <img src="{{ im.url }}" alt="{{ card.name }}" width="100%" height="{{ im.height}}" class="card__image">
+        {% endthumbnail %}
+    </a>
+    <div class="card__body">
+        <a class="card__title link" href="{% url 'recipe' recipe_id=card.id %}">{{ card.title }}</a>
+        <ul class="card__items">
+            {% for tag in card.tags.all %}
+            <li class="card__item"><span class="badge badge_style_{{ tag|add_color }}">{{ tag.title }}</span></li>
+            {% endfor %}
+        </ul>
+        <div class="card__items card__items_column">
+            <p class="card__text"><span class="icon-time"></span> {{ card.time }} мин.</p>
+            <p class="card__text"><span class="icon-user"></span> <a href="{% url 'profile' user_id=card.author.id %}" style="color: black">{% if card.author.get_full_name %}{{ card.author.get_full_name }} {% else %} {{ card.author }} {% endif %}</a></p>
         </div>
     </div>
-{% endblock %}
+    <div class="card__footer">
+        {% if request.user.is_authenticated %}
+            <button class="button button_style_light-blue" name="purchpurchases" {% if card not in purchase_list %}data-out{% endif %}><span class="{% if card in purchase_list %}icon-check{% else %}icon-plus{% endif %} button__icon"></span>{% if card in purchase_list %}Рецепт добавлен{% else %}Добавить в покупки{% endif %}</button>
+            <button class="button button_style_none" name="favorites"{% if card not in favorites %} data-out{% endif %}><span class="icon-favorite{% if card in favorites %} icon-favorite_active{% endif %}"></span></button>
+        {% endif %}
+    </div>
+</div>
