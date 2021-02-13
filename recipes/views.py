@@ -76,9 +76,8 @@ def recipe_detail(request, recipe_id):
 def profile(request, user_id):
     profile = get_object_or_404(User, id=user_id)
     tags = request.GET.getlist('tag')
-    queryset = Recipe.object.filter(author=profile)
-    recipes_list = Recipe.recipes.tag_filter(tags)
-    paginator = Paginator(recipes_list.filter(author=profile), 6)
+    recipe_list = tag_filter(Recipe, tags)
+    paginator = Paginator(recipe_list.filter(author=profile), 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     context = {
@@ -96,7 +95,7 @@ def profile(request, user_id):
 
 @login_required
 def follow_index(request):
-    queryset = Follow.objects.all().filter(author__following__user=request.user)
+    queryset = Follow.objects.filter(user=request.user)
     paginator = Paginator(queryset, 6)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)

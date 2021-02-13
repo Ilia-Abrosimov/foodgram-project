@@ -34,15 +34,15 @@ def subtract(number_1, number_2):
 @register.filter
 def get_tags(request):
     return request.getlist('tag')
-#
-#
-# @register.filter
-# def renew_tag_link(request, tag):
-#     request_copy = request.GET.copy()
-#     tags = request_copy.getlist('tag')
-#     if tag.slug in tags:
-#         tags.remove(tag.slug)
-#         request_copy.setlist('tag', tags)
-#     else:
-#         request_copy.appendlist('tag', tag.slug)
-#     return request_copy.urlencode()
+
+
+@register.filter
+def renew_tag_link(request, tag):
+    request_copy = request.GET.copy()
+    tags = request_copy.getlist('tag')
+    if tag.slug in tags:
+        tags.remove(tag.slug)
+        request_copy.setlist('tag', tags)
+    else:
+        request_copy.appendlist('tag', tag.slug)
+    return request_copy.urlencode()

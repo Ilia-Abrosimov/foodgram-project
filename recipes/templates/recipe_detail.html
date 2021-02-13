@@ -37,7 +37,9 @@
                 </div>
                 <ul class="single-card__items">
                     <li class="single-card__item"><button class="button button_style_blue" name="purchases" data-out><span class="icon-plus"></span> Добавить в покупки</button></li>
-                    <li class="single-card__item"><button class="button button_style_light-blue button_size_subscribe" name="subscribe" data-out>Подписаться на автора</button></li>
+                    {% if request.user.is_authenticated and request.user != recipe.author %}
+                     <button class="button button_style_light-blue button_size_auto" name="subscribe"{% if not is_subscribed %} data-out{% endif %}>{% if is_subscribed %}<span class="icon-check button__icon"></span>Отписаться от автора{% else %}Подписаться на автора{% endif %}</button>
+                    {% endif %}
                 </ul>
                 <div class="single-card__section">
                     <h3 class="single-card__section-title">Ингридиенты:</h3>
@@ -57,7 +59,7 @@
 
 {% block javascript %}
     {% load static %}
-    <script src="{% static 'js/components/Purchpurachases.js' %}"></script>
+    <script src="{% static 'js/components/Purchases.js' %}"></script>
     <script src="{% static 'js/components/Subscribe.js' %}"></script>
     <script src="{% static 'js/components/Favorites.js' %}"></script>
 

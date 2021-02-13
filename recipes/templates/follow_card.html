@@ -1,12 +1,12 @@
 {% load thumbnail user_filters %}
 <div class="card-user" data-author="{{ card.author.id }}">
     <div class="card-user__header">
-        <h2 class="card-user__title">{{ card.author }}</h2>
+        <h2 class="card-user__title">{% if card.author.get_full_name %}{{ card.author.get_full_name }}{% else %} {{card.author}} {% endif %}</h2>
     </div>
     <div class="card-user__body">
         <ul class="card-user__items">
             {% for recipe in card.author.recipe.all %}
-                {% if forloop.counter < 4 %}    
+                {% if forloop.counter < 4 %}
                     <li class="card-user__item">
                         <div class="recipe">
                             {% thumbnail recipe.image "72x72" crop="center" upscale=True as im %}

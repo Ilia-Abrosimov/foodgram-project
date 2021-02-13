@@ -29,11 +29,11 @@ class FollowAdmin(admin.ModelAdmin):
 
 
 class FavoritesAdmin(admin.ModelAdmin):
-    list_display = ('user', 'show_recipes', 'created')
+    list_display = ('user', 'recipes', 'created')
 
-    def show_recipes(self, obj):
-        recipes = obj.recipes.all()
-        return '\n'.join([recipe.title for recipe in recipes])
+    # def show_recipes(self, obj):
+    #     recipes = obj.recipes.all()
+    #     return '\n'.join([recipe.title for recipe in recipes])
 
 
 class ShoplistAdmin(admin.ModelAdmin):
