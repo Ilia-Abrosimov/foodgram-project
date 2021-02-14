@@ -16,7 +16,7 @@ from django.http import HttpResponse, JsonResponse
 
 def _extend_context(context, user):
     # context['purchase_list'] = ShopList.purchase.get_purchases_list(user)
-    context['favorites'] = Favorites.objects.filter(user=user)
+    context['favorites'] = Recipe.objects.filter(favorite_by=user)
     return context
 
 
@@ -69,6 +69,7 @@ def recipe_detail(request, recipe_id):
     if user.is_authenticated:
         _add_subscription_status(context, user, recipe.author)
         _extend_context(context, user)
+    print(context)
     return render(request, 'recipe_detail.html', context)
 
 
@@ -136,8 +137,18 @@ def delete_subscription(request, author_id):
 
 def favorite_index(request):
     tags = request.GET.getlist('tag')
-    queryset = Favorites.objects.filter(user=request.user)
-    recipe_list = [i.recipes for i in queryset]
+    user = request.user
+    recipe_lists = user.favorite_recipes.all()
+    if tags:
+        recipe_list = recipe_lists.prefetch_related(
+                'author', 'tags'
+            ).filter(
+                tags__slug__in=tags
+            ).distinct()
+    else:
+        recipe_list = recipe_lists.prefetch_related(
+                'author', 'tags'
+            ).all()
     paginator = Paginator(recipe_list, 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -150,8 +161,24 @@ def favorite_index(request):
     # if user.is_authenticated:
     #     context['active'] = 'recipe'
     #     _extend_context(context, user)
-    print(recipe_list)
     return render(request, 'favorites.html', context)
+
+
+@login_required(login_url='auth/login/')
+@require_POST
+def add_favorite(request):
+    json_data = json.loads(request.body.decode())
+    recipe_id = json_data['id']
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+    data = {'success': 'true'}
+    favorite = Favorites.objects.filter(user=request.user, recipes=recipe)
+    is_favorite = favorite.exists()
+    if is_favorite:
+        data['success'] = 'false'
+    else:
+        Favorites.objects.create(user=request.user, recipes=recipe)
+        # favorite.recipes.add(recipe)
+    return JsonResponse(data)
 
 
 @login_required(login_url='auth/login/')
@@ -160,12 +187,12 @@ def delete_favorite(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
     try:
-        favorite = Favorites.favorite.get(user=request.user)
+        favorite = Favorites.objects.filter(user=request.user, recipes=recipe)
     except ObjectDoesNotExist:
         data['success'] = 'false'
-    if not favorite.recipes.filter(id=recipe_id).exists():
+    if not favorite.exists():
         data['success'] = 'false'
-    favorite.recipes.remove(recipe)
+    favorite.delete()
     return JsonResponse(data)
 
 

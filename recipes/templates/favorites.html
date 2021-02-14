@@ -21,12 +21,12 @@
 
 {% block javascript %}
     {% load static %}
-    <script src="./js/components/MainCards.js"></script>
-    <script src="./js/components/Purchases.js"></script>
-    <script src="./js/components/Favorites.js"></script>
-    <script src="./js/config/config.js"></script>
-    <script src="./js/components/CardList.js"></script>
-    <script src="./js/components/Header.js"></script>
-    <script src="./js/api/Api.js"></script>
-    <script src="favorite.js"></script>
+    <script src="{% static 'js/components/MainCards.js' %}"></script>
+    <script src="{% static 'js/components/Purchases.js' %}"></script>
+    <script src="{% static 'js/components/Favorites.js' %}"></script>
+    <script src="{% static 'js/config/config.js' %}"></script>
+    <script src="{% static 'js/components/CardList.js' %}"></script>
+    <script src="{% static 'js/components/Header.js' %}"></script>
+    <script src="{% static 'js/api/Api.js' %}"></script>
+    <script src="{% static 'favorite.js' %}"></script>
 {% endblock %}
