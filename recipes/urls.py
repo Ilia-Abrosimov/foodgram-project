@@ -4,7 +4,8 @@ from django.conf.urls.static import static
 
 from .views import (index, recipe_detail, profile, follow_index,
                     favorite_index, shoplistview, new_recipe, subscription,
-                    delete_subscription, add_favorite, delete_favorite)
+                    delete_subscription, add_favorite, delete_favorite,
+                    add_purchase, delete_purchase)
 
 urlpatterns = [
     path('', index, name='index'),
@@ -18,6 +19,8 @@ urlpatterns = [
     path('add-favorite', add_favorite, name='add_favorite'),
     path('del-favorite/<int:recipe_id>', delete_favorite, name='del-favorite'),
     path('purchases/', shoplistview, name='purchases'),
+    path('add-purchase', add_purchase, name='add-purchase'),
+    path('del-purchase/<int:recipe_id>', delete_purchase, name='del-purchase'),
     path('new/', new_recipe, name='new'),
 ]
 

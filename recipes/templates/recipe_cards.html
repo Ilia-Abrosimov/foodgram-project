@@ -20,7 +20,7 @@
     </div>
     <div class="card__footer">
         {% if request.user.is_authenticated %}
-            <button class="button button_style_light-blue" name="purchpurchases" {% if card not in purchase_list %}data-out{% endif %}><span class="{% if card in purchase_list %}icon-check{% else %}icon-plus{% endif %} button__icon"></span>{% if card in purchase_list %}Рецепт добавлен{% else %}Добавить в покупки{% endif %}</button>
+            <button class="button button_style_light-blue" name="purchases" {% if card not in purchase_list %}data-out{% endif %}><span class="{% if card in purchase_list %}icon-check{% else %}icon-plus{% endif %} button__icon"></span>{% if card in purchase_list %}Рецепт добавлен{% else %}Добавить в покупки{% endif %}</button>
             <button class="button button_style_none" name="favorites"{% if card not in favorites %} data-out{% endif %}><span class="icon-favorite{% if card in favorites %} icon-favorite_active{% endif %}"></span></button>
         {% endif %}
     </div>

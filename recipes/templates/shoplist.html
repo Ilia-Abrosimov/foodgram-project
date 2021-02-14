@@ -29,14 +29,16 @@
             {% endfor %}
         </ul>
         <a href="#"><button class="button button_style_blue">Скачать список</button></a>
+        </div>
     </div>
 {% endblock %}
 
 {% block javascript %}
     {% load static %}
-    <script src="./js/config/config.js"></script>
-    <script src="./js/components/Header.js"></script>
-    <script src="./js/components/ShopList.js"></script>
-    <script src="./js/api/Api.js"></script>
-    <script src="shopList.js"></script>
+    <script src="{% static 'js/config/config.js' %}"></script>
+    <script src="{% static 'js/components/Header.js' %}"></script>
+    <script src="{% static 'js/components/ShopList.js' %}"></script>
+    <script src="{% static 'js/api/Api.js' %}"></script>
+    <script src="{% static 'js/shopList.js' %}"></script>
+
 {% endblock %}

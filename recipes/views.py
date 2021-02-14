@@ -15,7 +15,7 @@ from django.http import HttpResponse, JsonResponse
 
 
 def _extend_context(context, user):
-    # context['purchase_list'] = ShopList.purchase.get_purchases_list(user)
+    context['purchase_list'] = Recipe.objects.filter(purchase_by=user)
     context['favorites'] = Recipe.objects.filter(favorite_by=user)
     return context
 
@@ -69,7 +69,6 @@ def recipe_detail(request, recipe_id):
     if user.is_authenticated:
         _add_subscription_status(context, user, recipe.author)
         _extend_context(context, user)
-    print(context)
     return render(request, 'recipe_detail.html', context)
 
 
@@ -94,7 +93,7 @@ def profile(request, user_id):
     return render(request, 'profile.html', context)
 
 
-@login_required
+@login_required(login_url='auth/login/')
 def follow_index(request):
     queryset = Follow.objects.filter(user=request.user)
     paginator = Paginator(queryset, 6)
@@ -135,6 +134,7 @@ def delete_subscription(request, author_id):
     return JsonResponse(data)
 
 
+@login_required(login_url='auth/login/')
 def favorite_index(request):
     tags = request.GET.getlist('tag')
     user = request.user
@@ -157,10 +157,9 @@ def favorite_index(request):
         'page': page,
         'paginator': paginator
     }
-    # user = request.user
-    # if user.is_authenticated:
-    #     context['active'] = 'recipe'
-    #     _extend_context(context, user)
+    if user.is_authenticated:
+        context['active'] = 'recipe'
+        _extend_context(context, user)
     return render(request, 'favorites.html', context)
 
 
@@ -177,7 +176,6 @@ def add_favorite(request):
         data['success'] = 'false'
     else:
         Favorites.objects.create(user=request.user, recipes=recipe)
-        # favorite.recipes.add(recipe)
     return JsonResponse(data)
 
 
@@ -196,13 +194,42 @@ def delete_favorite(request, recipe_id):
     return JsonResponse(data)
 
 
-@login_required
+@login_required(login_url='auth/login/')
 def shoplistview(request):
-    queryset = ShopList.objects.all().filter(user=request.user)
-    recipes = [i.recipe for i in queryset]
-    return render(request,
-                  "shoplist.html",
-                  {"page": recipes})
+    user = request.user
+    recipes = user.shop_list.all()
+    return render(request, "shoplist.html", {"page": recipes})
+
+
+@login_required(login_url='auth/login/')
+@require_POST
+def add_purchase(request):
+    json_data = json.loads(request.body.decode())
+    recipe_id = json_data['id']
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+    data = {'success': 'true'}
+    purchase = ShopList.objects.filter(user=request.user, recipes=recipe)
+    is_favorite = purchase.exists()
+    if is_favorite:
+        data['success'] = 'false'
+    else:
+        ShopList.objects.create(user=request.user, recipes=recipe)
+    return JsonResponse(data)
+
+
+@login_required(login_url='auth/login/')
+@require_http_methods('DELETE')
+def delete_purchase(request, recipe_id):
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+    data = {'success': 'true'}
+    try:
+        purchase = ShopList.objects.filter(user=request.user, recipes=recipe)
+    except ObjectDoesNotExist:
+        data['success'] = 'false'
+    if not purchase.exists():
+        data['success'] = 'false'
+    purchase.delete()
+    return JsonResponse(data)
 
 
 @login_required
