@@ -61,10 +61,10 @@ class Recipe(models.Model):
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
     favorite_by = models.ManyToManyField(User, through='Favorites',
                                          related_name='favorite_recipes',
-                                         null=True, blank=True)
+                                         blank=True)
     purchase_by = models.ManyToManyField(User, through='ShopList',
                                          related_name='shop_list',
-                                         null=True, blank=True)
+                                         blank=True)
 
     class Meta:
         ordering = ['-pub_date']

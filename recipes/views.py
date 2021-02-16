@@ -158,7 +158,6 @@ def favorite_index(request):
         'paginator': paginator
     }
     if user.is_authenticated:
-        context['active'] = 'recipe'
         _extend_context(context, user)
     return render(request, 'favorites.html', context)
 
