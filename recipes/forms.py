@@ -12,16 +12,18 @@ class RecipeForm(forms.ModelForm):
 
     class Meta:
         model = Recipe
-        fields = ('title', 'tags', 'ingredients', 'time', 'description', 'image')
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form__input'}),
-            'time': forms.NumberInput(
-                attrs={'class': 'form__input',
-                       'id': 'id_time',
-                       'time': 'time'}),
-            'description': forms.Textarea(attrs={'class': 'form__textarea',
-                                                 'rows': '6'}),
-        }
-        labels = {
-            'image': 'Загрузить фото'
-        }
+        fields = ('title', 'tags', 'time', 'description', 'image')
+
+        # fields = ('title', 'tags', 'ingredients', 'time', 'description', 'image')
+        # widgets = {
+        #     'name': forms.TextInput(attrs={'class': 'form__input'}),
+        #     'time': forms.NumberInput(
+        #         attrs={'class': 'form__input',
+        #                'id': 'id_time',
+        #                'time': 'time'}),
+        #     'description': forms.Textarea(attrs={'class': 'form__textarea',
+        #                                          'rows': '6'}),
+        # }
+        # labels = {
+        #     'image': 'Загрузить фото'
+        # }

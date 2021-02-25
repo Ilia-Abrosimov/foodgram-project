@@ -5,11 +5,12 @@ from django.conf.urls.static import static
 from .views import (index, recipe_detail, profile, follow_index,
                     favorite_index, shoplistview, new_recipe, subscription,
                     delete_subscription, add_favorite, delete_favorite,
-                    add_purchase, delete_purchase)
+                    add_purchase, delete_purchase, get_ingredients, edit_recipe)
 
 urlpatterns = [
     path('', index, name='index'),
     path('recipes/<int:recipe_id>/', recipe_detail, name='recipe'),
+    path('recipes/<int:recipe_id>/edit/', edit_recipe, name='edit_recipe'),
     path('users/<int:user_id>', profile, name='profile'),
     path('follows', follow_index, name='follows'),
     path('subscriptions', subscription, name='subscription'),
@@ -21,6 +22,7 @@ urlpatterns = [
     path('purchases/', shoplistview, name='purchases'),
     path('add-purchase', add_purchase, name='add-purchase'),
     path('del-purchase/<int:recipe_id>', delete_purchase, name='del-purchase'),
+    path('ingredients', get_ingredients, name='ingredients'),
     path('new/', new_recipe, name='new'),
 ]
 

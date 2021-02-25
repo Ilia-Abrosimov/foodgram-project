@@ -5,12 +5,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic.base import View
 from django.views.generic.list import MultipleObjectMixin
-from .models import Recipe, User, Follow, Favorites, ShopList, Tag
+from .models import Recipe, User, Follow, Favorites, ShopList, Tag, Products, Ingredient
 from django.views.generic import ListView, DetailView
 from .forms import RecipeForm
 from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
 import json
+from urllib.parse import unquote
 from django.http import HttpResponse, JsonResponse
 
 
@@ -231,12 +232,63 @@ def delete_purchase(request, recipe_id):
     return JsonResponse(data)
 
 
-@login_required
+@login_required(login_url='auth/login/')
+@require_GET
+def get_ingredients(request):
+    query = unquote(request.GET.get('query'))
+    data = list(Products.objects.filter(
+        title__startswith=query
+    ).values(
+        'title', 'unit'))
+    a = JsonResponse(data, safe=False)
+    return a
+
+
+@login_required(login_url='auth/login/')
 def new_recipe(request):
     form = RecipeForm(request.POST or None, files=request.FILES or None)
-    if form.is_valid():
-        recipe = form.save(commit=False)
-        recipe.author = request.user
-        recipe.save()
-        return redirect('index')
-    return render(request, '123.html', {'form': form})
+    if request.method == "POST":
+        tags = request.POST.getlist('tags')
+        ingredients = request.POST.getlist('nameIngredient')
+        value_ing = request.POST.getlist('valueIngredient')
+        if form.is_valid():
+            recipe = form.save(commit=False)
+            recipe.author = request.user
+            recipe.save()
+            for tag in tags:
+                recipe.tags.add(Tag.objects.get(slug=tag))
+            ing = []
+            for ingredient, value in zip(ingredients, value_ing):
+                product = Products.objects.get(title=ingredient)
+                ing.append(Ingredient(ingredient=product, recipe=recipe, amount=value))
+            Ingredient.objects.bulk_create(ing)
+            # recipe.ingredients.clear()
+            return redirect('index')
+        return render(request, 'recipe_new.html', {'form': form})
+    return render(request, 'recipe_new.html', {'form': form})
+
+
+@login_required(login_url='auth/login/')
+def edit_recipe(request, recipe_id):
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+    if recipe.author != request.user:
+        return redirect('recipe', id=recipe_id)
+    if recipe.author == request.user:
+        form = RecipeForm(request.POST or None, files=request.FILES or None,
+                          instance=recipe)
+        if form.is_valid():
+            recipe = form.save(commit=False)
+            recipe.author = request.user
+            recipe.save()
+            tags = request.POST.getlist('tags')
+            ingredients = request.POST.getlist('nameIngredient')
+            value_ing = request.POST.getlist('valueIngredient')
+            for tag in tags:
+                recipe.tags.add(Tag.objects.get(slug=tag))
+            ing = []
+            for ingredient, value in zip(ingredients, value_ing):
+                product = Products.objects.get(title=ingredient)
+                ing.append(Ingredient(ingredient=product, recipe=recipe, amount=value))
+            Ingredient.objects.bulk_create(ing)
+            return redirect('recipe', id=recipe_id)
+        return render(request, 'recipe_new.html', {'form': form})
