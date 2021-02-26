@@ -276,6 +276,15 @@ def edit_recipe(request, recipe_id):
     if recipe.author == request.user:
         form = RecipeForm(request.POST or None, files=request.FILES or None,
                           instance=recipe)
+        recipe_tags = Tag.objects.filter(recipe=recipe_id)
+        tags = [el.slug for el in recipe_tags]
+        # ing_list = recipe.ingredients.all()
+        recipe_ingredients = Ingredient.objects.filter(recipe=recipe_id)
+        context = {'form': form,
+                   'tags': tags,
+                   "ing_list": recipe_ingredients,
+                   'is_created': True,
+                   'recipe_id': recipe.id}
         if form.is_valid():
             recipe = form.save(commit=False)
             recipe.author = request.user
@@ -283,12 +292,25 @@ def edit_recipe(request, recipe_id):
             tags = request.POST.getlist('tags')
             ingredients = request.POST.getlist('nameIngredient')
             value_ing = request.POST.getlist('valueIngredient')
+            recipe.tags.clear()
+            recipe.ingredients.clear()
             for tag in tags:
                 recipe.tags.add(Tag.objects.get(slug=tag))
             ing = []
             for ingredient, value in zip(ingredients, value_ing):
                 product = Products.objects.get(title=ingredient)
-                ing.append(Ingredient(ingredient=product, recipe=recipe, amount=value))
+                ing.append(Ingredient(ingredient=product, recipe=recipe,
+                                      amount=value.replace(',','.')))
             Ingredient.objects.bulk_create(ing)
-            return redirect('recipe', id=recipe_id)
-        return render(request, 'recipe_new.html', {'form': form})
+            return redirect('index')
+        return render(request, 'recipe_new.html', context)
+
+
+@login_required(login_url='auth/login/')
+@require_GET
+def delete_recipe(request, recipe_id):
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+    if recipe.author != request.user:
+        return redirect("index")
+    recipe.delete()
+    return redirect('index')

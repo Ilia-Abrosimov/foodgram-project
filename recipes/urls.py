@@ -5,12 +5,14 @@ from django.conf.urls.static import static
 from .views import (index, recipe_detail, profile, follow_index,
                     favorite_index, shoplistview, new_recipe, subscription,
                     delete_subscription, add_favorite, delete_favorite,
-                    add_purchase, delete_purchase, get_ingredients, edit_recipe)
+                    add_purchase, delete_purchase, get_ingredients, edit_recipe,
+                    delete_recipe)
 
 urlpatterns = [
     path('', index, name='index'),
     path('recipes/<int:recipe_id>/', recipe_detail, name='recipe'),
     path('recipes/<int:recipe_id>/edit/', edit_recipe, name='edit_recipe'),
+    path('recipes/<int:recipe_id>/delete', delete_recipe, name='delete_recipe'),
     path('users/<int:user_id>', profile, name='profile'),
     path('follows', follow_index, name='follows'),
     path('subscriptions', subscription, name='subscription'),

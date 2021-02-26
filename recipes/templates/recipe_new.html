@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}Создание рецепта{% endblock %}
+{% block title %}
+    {% if is_created %}
+        Редактирование рецепта
+    {% else %}
+        Создание рецепта
+    {% endif %}
+{% endblock %}
 
 {% block styles %}
     {% load static %}
@@ -9,7 +15,11 @@
 {% block content %}
 {% load user_filters %}
     <div class="main__header">
+        {% if is_created %}
+        <h1 class="main__title">Редактирование рецепта</h1>
+        {% else %}
         <h1 class="main__title">Создание рецепта</h1>
+        {% endif %}
     </div>
     <div class="form-container">
         <form class="form" method="post" enctype="multipart/form-data">
@@ -17,7 +27,7 @@
             <div class="form__group">
                 <label for="{{ form.title.id_for_label }}" class="form__label">Название рецепта</label>
                 <div class="form__field-group">
-                    <input type="text" id="{{ form.title.id_for_label }}" name="{{ form.title.name }}" class="form__input">
+                    {{ form.title|addclass:'form__input' }}
                     {% for error in form.title.errors %}
                     <span class="form__error">{{ error }}</span>
                     {% endfor %}
@@ -28,15 +38,18 @@
                 <div class="form__field-group">
                     <div class="tags">
                         <div class="tags__item">
-                            <input type="checkbox" name="tags" value="breakfast" id="id_tags_0" class="tags__checkbox tags__checkbox_style_orange" checked>
+                            <input type="checkbox" name="tags" value="breakfast" id="id_tags_0" class="tags__checkbox tags__checkbox_style_orange"
+                            {% if 'breakfast' in tags %} checked {% endif %}>
                             <label for="id_tags_0" class="tags__label">Завтрак</label>
                         </div>
                         <div class="tags__item">
-                            <input type="checkbox" name="tags" value="lunch" id="id_tags_1" class="tags__checkbox tags__checkbox_style_green" checked>
+                            <input type="checkbox" name="tags" value="lunch" id="id_tags_1" class="tags__checkbox tags__checkbox_style_green"
+                            {% if 'lunch' in tags %} checked {% endif %}>
                             <label for="id_tags_1" class="tags__label">Обед</label>
                         </div>
                         <div class="tags__item">
-                            <input type="checkbox" name="tags" value="dinner" id="id_tags_2" class="tags__checkbox tags__checkbox_style_purple" checked>
+                            <input type="checkbox" name="tags" value="dinner" id="id_tags_2" class="tags__checkbox tags__checkbox_style_purple"
+                            {% if 'dinner' in tags %} checked {% endif %}>
                             <label for="id_tags_2" class="tags__label">Ужин</label>
                         </div>
                     </div>
@@ -55,7 +68,17 @@
                         <label for="cantidad" class="form__label" id="cantidadVal">шт.</label>
                     </div>
                     <div class="form__field-group-ingredientes-container">
-
+                        {% for ingredient in ing_list %}
+                            <div class="form__field-item-ingredient" id="ing_{{ forloop.counter }}">
+                                <span>{{ ingredient.ingredient.title }} {{ ingredient.amount }}{{ ingredient.ingredient.unit }}.</span>
+                                <span class="form__field-item-delete"></span>
+                                <input id="nameIngredient_{{ forloop.counter }}" name="nameIngredient" type="hidden" value="{{ ingredient.ingredient.title }}">
+                                <input id="valueIngredient_{{ forloop.counter }}" name="valueIngredient" type="hidden" value="{{ ingredient.amount }}">
+                                <input id="unitsIngredient_{{ forloop.counter }}" name="unitsIngredient" type="hidden" value="{{ ingredient.ingredient.unit }}.">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form__field-group-ingredientes-container">
                     </div>
                     <span class="form__ingredient-link" id="addIng">Добавить ингредиент</span>
                     <span class="form__error"></span>
@@ -64,7 +87,7 @@
             <div class="form__group">
                 <label for="{{ form.time.id_for_label }}" class="form__label">Время приготовления</label>
                 <div class="form__field-group form__field-group_time">
-                    <input type="text" id="id_time" name="{{ form.time.name }}" class="form__input">
+                    {{ form.time|addclass:'form__input' }}
                     <label for="{{ form.time.id_for_label }}" class="form__label">минут</label>
                     <span class="form__error"></span>
                 </div>
@@ -72,19 +95,23 @@
             <div class="form__group">
                 <label for="{{ form.description.id_for_label }}" class="form__label">Описание</label>
                 <div class="form__field-group">
-                    <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" rows="8" class="form__textarea"></textarea>
+                    {{ form.description|addclass:"form__textarea" }}
                     <span class="form__error"></span>
                 </div>
             </div>
             <div class="form__group">
                 <span class="form__label">Загрузить фото</span>
                 <div class="form__field-group">
-                    <input type="file" name="{{ form.image.name }}" id="{{ form.image.id_for_label }}">
+                    {{ form.image }}
                     <span class="form__error"></span>
                 </div>
             </div>
             <div class="form__footer">
-                <button class="button button_style_blue">Создать рецепт</button>
+                {% if is_created %}
+                    <button class="button button_style_blue">Сохранить</button> <a style="margin-left: 2.5em" href="{% url 'delete_recipe' recipe_id=recipe_id %}" class="form__ingredient-link">Удалить</a>
+                {% else %}
+                    <button class="button button_style_blue">Создать рецепт</button>
+                {% endif %}
             </div>
         </form>
     </div>
