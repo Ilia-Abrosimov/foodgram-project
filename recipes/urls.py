@@ -6,7 +6,7 @@ from .views import (index, recipe_detail, profile, follow_index,
                     favorite_index, shoplistview, new_recipe, subscription,
                     delete_subscription, add_favorite, delete_favorite,
                     add_purchase, delete_purchase, get_ingredients, edit_recipe,
-                    delete_recipe)
+                    delete_recipe, download_pdf)
 
 urlpatterns = [
     path('', index, name='index'),
@@ -26,6 +26,7 @@ urlpatterns = [
     path('del-purchase/<int:recipe_id>', delete_purchase, name='del-purchase'),
     path('ingredients', get_ingredients, name='ingredients'),
     path('new/', new_recipe, name='new'),
+    path('download_shoplist', download_pdf, name='download_shoplist'),
 ]
 
 if settings.DEBUG:

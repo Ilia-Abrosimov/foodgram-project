@@ -13,6 +13,12 @@ from django.views.decorators.http import (require_GET, require_http_methods,
 import json
 from urllib.parse import unquote
 from django.http import HttpResponse, JsonResponse
+import reportlab
+from django.conf import settings
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
 
 
 def _extend_context(context, user):
@@ -314,3 +320,47 @@ def delete_recipe(request, recipe_id):
         return redirect("index")
     recipe.delete()
     return redirect('index')
+
+
+@login_required
+def download_pdf(request):
+    reportlab.rl_config.TTFSearchPath.append(
+        str(settings.BASE_DIR) + "/Library/Fonts/"
+    )
+    user = get_object_or_404(User, username=request.user)
+    ing_dict = {}
+    shop_list = ShopList.objects.filter(user=user)
+    if len(shop_list) == 0:
+        return redirect('purchases')
+    # генерируем словарь с ингредиентами
+    for el in shop_list:
+        ingredients = Ingredient.objects.filter(recipe=el.recipes.id)
+        for ingredient in ingredients:
+            name = ingredient.ingredient.title
+            count = ingredient.amount
+            dimension = ingredient.ingredient.unit
+            if name not in ing_dict:
+                ing_dict[name] = [count, dimension]
+            else:
+                ing_dict[name][0] += count
+    # настройка pdf файла и ответа на выгрузку файла
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="shopList.pdf"'
+    p = canvas.Canvas(response, pagesize=A4)
+    pdfmetrics.registerFont(TTFont("Arial", "arial.ttf"))
+    p.setFont("Arial", 20)
+    x = 50
+    y = 750
+    for num, el in enumerate(ing_dict):
+        # если закончилось место на странице создаем новую страницу
+        if y <= 100:
+            y = 700
+            p.showPage()
+            p.setFont("Arial", 20)
+        p.drawString(
+            x, y, f"№{num + 1}: {el} - {ing_dict[el][0]} {ing_dict[el][1]}"
+        )
+        y -= 30
+    p.showPage()
+    p.save()
+    return response
