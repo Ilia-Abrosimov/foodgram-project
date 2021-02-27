@@ -6,7 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic.base import View
 from django.views.generic.list import MultipleObjectMixin
 from .models import Recipe, User, Follow, Favorites, ShopList, Tag, Products, Ingredient
-from django.views.generic import ListView, DetailView
+from django.views.generic import TemplateView
 from .forms import RecipeForm
 from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
@@ -266,9 +266,9 @@ def new_recipe(request):
             ing = []
             for ingredient, value in zip(ingredients, value_ing):
                 product = Products.objects.get(title=ingredient)
-                ing.append(Ingredient(ingredient=product, recipe=recipe, amount=value))
+                ing.append(Ingredient(ingredient=product, recipe=recipe,
+                                      amount=value))
             Ingredient.objects.bulk_create(ing)
-            # recipe.ingredients.clear()
             return redirect('index')
         return render(request, 'recipe_new.html', {'form': form})
     return render(request, 'recipe_new.html', {'form': form})
@@ -284,7 +284,6 @@ def edit_recipe(request, recipe_id):
                           instance=recipe)
         recipe_tags = Tag.objects.filter(recipe=recipe_id)
         tags = [el.slug for el in recipe_tags]
-        # ing_list = recipe.ingredients.all()
         recipe_ingredients = Ingredient.objects.filter(recipe=recipe_id)
         context = {'form': form,
                    'tags': tags,
@@ -306,7 +305,7 @@ def edit_recipe(request, recipe_id):
             for ingredient, value in zip(ingredients, value_ing):
                 product = Products.objects.get(title=ingredient)
                 ing.append(Ingredient(ingredient=product, recipe=recipe,
-                                      amount=value.replace(',','.')))
+                                      amount=value.replace(',', '.')))
             Ingredient.objects.bulk_create(ing)
             return redirect('index')
         return render(request, 'recipe_new.html', context)
@@ -364,3 +363,20 @@ def download_pdf(request):
     p.showPage()
     p.save()
     return response
+
+
+def page_not_found(request, exception):
+    return render(
+        request,
+        "misc/404.html",
+        {"path": request.path},
+        status=404
+    )
+
+
+class AboutAuthorView(TemplateView):
+    template_name = 'static_templates/about-author.html'
+
+
+class AboutTechView(TemplateView):
+    template_name = 'static_templates/about-tech.html'
