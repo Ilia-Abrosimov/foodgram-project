@@ -2,10 +2,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils.decorators import method_decorator
-from django.views.generic.base import View
-from django.views.generic.list import MultipleObjectMixin
-from .models import Recipe, User, Follow, Favorites, ShopList, Tag, Products, Ingredient
+from .models import Recipe, User, Follow, Favorites, ShopList, Tag, Products, \
+    Ingredient
 from django.views.generic import TemplateView
 from .forms import RecipeForm
 from django.views.decorators.http import (require_GET, require_http_methods,
@@ -81,21 +79,21 @@ def recipe_detail(request, recipe_id):
 
 @require_GET
 def profile(request, user_id):
-    profile = get_object_or_404(User, id=user_id)
+    author = get_object_or_404(User, id=user_id)
     tags = request.GET.getlist('tag')
     recipe_list = tag_filter(Recipe, tags)
-    paginator = Paginator(recipe_list.filter(author=profile), 6)
+    paginator = Paginator(recipe_list.filter(author=author), 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     context = {
         'tags': Tag.objects.all(),
-        'profile': profile,
+        'author': author,
         'page': page,
         'paginator': paginator
     }
     user = request.user
     if user.is_authenticated:
-        _add_subscription_status(context, user, profile)
+        _add_subscription_status(context, user, author)
         _extend_context(context, user)
     return render(request, 'profile.html', context)
 
@@ -201,10 +199,10 @@ def delete_favorite(request, recipe_id):
 
 
 @login_required(login_url='auth/login/')
-def shoplistview(request):
+def purchases(request):
     user = request.user
     recipes = user.shop_list.all()
-    return render(request, "shoplist.html", {"page": recipes})
+    return render(request, "purchases.html", {"page": recipes})
 
 
 @login_required(login_url='auth/login/')
