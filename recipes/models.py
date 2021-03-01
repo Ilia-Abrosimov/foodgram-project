@@ -16,7 +16,7 @@ class Tag(models.Model):
 
 
 class Products(models.Model):
-    title = models.CharField(max_length=50, verbose_name='Название продукта')
+    title = models.CharField(max_length=100, verbose_name='Название продукта')
     unit = models.CharField(max_length=10, verbose_name='Единицы измерения')
 
     class Meta:
