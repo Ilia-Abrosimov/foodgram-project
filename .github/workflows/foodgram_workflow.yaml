@@ -20,7 +20,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Lint with flake8
-      run: flake8 --exclude foodgram/settings.py,recipes/migrations/,recipes/urls/,foodgram/urls.py .
+      run: flake8 --exclude foodgram/settings.py,recipes/migrations/,recipes/urls/,foodgram/urls/ .
 
   build_and_push_to_docker_hub:
     name: Push Docker image to Docker Hub
