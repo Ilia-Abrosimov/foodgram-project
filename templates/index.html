@@ -13,7 +13,7 @@
     </div>
     <div class="card-list">
         {% for card in page %}
-            {% include 'recipe_cards.html' with card=card %}
+            {% include 'recipes/recipe_cards.html' with card=card %}
         {% endfor %}
     </div>
     {% include 'includes/paginator.html' with page=page paginator=paginator %}

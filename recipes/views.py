@@ -74,7 +74,7 @@ def recipe_detail(request, recipe_id):
     if user.is_authenticated:
         _add_subscription_status(context, user, recipe.author)
         _extend_context(context, user)
-    return render(request, 'recipe_detail.html', context)
+    return render(request, 'recipes/recipe_detail.html', context)
 
 
 @require_GET
@@ -95,7 +95,7 @@ def profile(request, user_id):
     if user.is_authenticated:
         _add_subscription_status(context, user, author)
         _extend_context(context, user)
-    return render(request, 'profile.html', context)
+    return render(request, 'recipes/profile.html', context)
 
 
 @login_required(login_url='auth/login/')
@@ -105,7 +105,7 @@ def follow_index(request):
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     return render(request,
-                  "follow.html",
+                  "recipes/follow.html",
                   {"page": page,
                    "paginator": paginator,
                    "page_number": page_number})
@@ -164,7 +164,7 @@ def favorite_index(request):
     }
     if user.is_authenticated:
         _extend_context(context, user)
-    return render(request, 'favorites.html', context)
+    return render(request, 'recipes/favorites.html', context)
 
 
 @login_required(login_url='auth/login/')
@@ -202,7 +202,7 @@ def delete_favorite(request, recipe_id):
 def purchases(request):
     user = request.user
     recipes = user.shop_list.all()
-    return render(request, "purchases.html", {"page": recipes})
+    return render(request, "recipes/purchases.html", {"page": recipes})
 
 
 @login_required(login_url='auth/login/')
@@ -268,8 +268,8 @@ def new_recipe(request):
                                       amount=value))
             Ingredient.objects.bulk_create(ing)
             return redirect('index')
-        return render(request, 'recipe_new.html', {'form': form})
-    return render(request, 'recipe_new.html', {'form': form})
+        return render(request, 'recipes/recipe_new.html', {'form': form})
+    return render(request, 'recipes/recipe_new.html', {'form': form})
 
 
 @login_required(login_url='auth/login/')
@@ -306,7 +306,7 @@ def edit_recipe(request, recipe_id):
                                       amount=value.replace(',', '.')))
             Ingredient.objects.bulk_create(ing)
             return redirect('index')
-        return render(request, 'recipe_new.html', context)
+        return render(request, 'recipes/recipe_new.html', context)
 
 
 @login_required(login_url='auth/login/')
@@ -329,7 +329,6 @@ def download_pdf(request):
     shop_list = ShopList.objects.filter(user=user)
     if len(shop_list) == 0:
         return redirect('purchases')
-    # генерируем словарь с ингредиентами
     for el in shop_list:
         ingredients = Ingredient.objects.filter(recipe=el.recipes.id)
         for ingredient in ingredients:
@@ -340,7 +339,6 @@ def download_pdf(request):
                 ing_dict[name] = [count, dimension]
             else:
                 ing_dict[name][0] += count
-    # настройка pdf файла и ответа на выгрузку файла
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="shopList.pdf"'
     p = canvas.Canvas(response, pagesize=A4)
@@ -349,7 +347,6 @@ def download_pdf(request):
     x = 50
     y = 750
     for num, el in enumerate(ing_dict):
-        # если закончилось место на странице создаем новую страницу
         if y <= 100:
             y = 700
             p.showPage()
@@ -361,15 +358,6 @@ def download_pdf(request):
     p.showPage()
     p.save()
     return response
-
-
-def page_not_found(request, exception):
-    return render(
-        request,
-        "misc/404.html",
-        {"path": request.path},
-        status=404
-    )
 
 
 class AboutAuthorView(TemplateView):

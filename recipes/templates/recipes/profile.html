@@ -9,11 +9,11 @@
 {% block content %}
 
         <div class="main__header">
-            <h1 class="main__title">{% if profile.get_full_name %}{{ profile.get_full_name }} {% else %} {{profile.username}} {% endif %}</h1>
+            <h1 class="main__title">{% if author.get_full_name %}{{ author.get_full_name }} {% else %} {{author.username}} {% endif %}</h1>
             {% include 'includes/tags.html' %}
         </div>
-        {% if request.user.is_authenticated and request.user != profile %}
-        <div class="author-subscribe" data-author="{{ profile.id }}">
+        {% if request.user.is_authenticated and request.user != author %}
+        <div class="author-subscribe" data-author="{{ author.id }}">
             <p style="padding: 0 0 2em 0;">
                 <button class="button button_style_light-blue button_size_auto" name="subscribe"{% if not is_subscribed %} data-out{% endif %}>{% if is_subscribed %}<span class="icon-check button__icon"></span>Отписаться от автора{% else %}Подписаться на автора{% endif %}</button>
             </p>
@@ -21,7 +21,7 @@
         {% endif %}
         <div class="card-list">
             {% for card in page %}
-                {% include 'recipe_cards.html' with card=card %}
+                {% include 'recipes/recipe_cards.html' with card=card %}
             {% endfor %}
         </div>
     {% include 'includes/paginator.html' with page=page paginator=paginator %}

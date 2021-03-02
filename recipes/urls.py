@@ -1,7 +1,4 @@
 from django.urls import path
-from django.conf import settings
-from django.conf.urls.static import static
-
 from .views import (index, recipe_detail, profile, follow_index,
                     favorite_index, purchases, new_recipe, subscription,
                     delete_subscription, add_favorite, delete_favorite,
@@ -30,7 +27,3 @@ urlpatterns = [
     path('about/author', AboutAuthorView.as_view(), name='about-author'),
     path('about/technology', AboutTechView.as_view(), name='about-tech'),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
