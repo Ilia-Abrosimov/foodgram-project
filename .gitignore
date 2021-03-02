@@ -8,7 +8,6 @@ __pycache__/
 media/
 sent_emails/
 static/
-staticfiles/
 ingredients.csv
 # Distribution / packaging
 .Python
