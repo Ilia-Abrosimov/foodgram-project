@@ -1,22 +1,24 @@
+import json
+from urllib.parse import unquote
+
+import reportlab
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Recipe, User, Follow, Favorites, ShopList, Tag, Products, \
-    Ingredient
-from django.views.generic import TemplateView
-from .forms import RecipeForm
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
-import json
-from urllib.parse import unquote
-from django.http import HttpResponse, JsonResponse
-import reportlab
-from django.conf import settings
+from django.views.generic import TemplateView
 from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
-from reportlab.pdfbase import pdfmetrics
+
+from .forms import RecipeForm
+from .models import (
+    Favorites, Follow, Ingredient, Products, Recipe, ShopList, Tag, User)
 
 
 def _extend_context(context, user):

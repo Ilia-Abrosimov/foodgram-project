@@ -14,6 +14,7 @@
         {% include 'includes/nav.html' %}
         <main class="main container">
             {% block content %}
+                {% csrf_token %}
             {% endblock content %}
         </main>
         {% include 'includes/footer.html' %}

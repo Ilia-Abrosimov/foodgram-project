@@ -1,5 +1,4 @@
 {% load thumbnail user_filters %}
-{% csrf_token %}
 <div class="card" data-id="{{ card.id }}">
     <a href="{% url 'recipe' recipe_id=card.id %}" class="link">
         {% thumbnail card.image "364x240" crop="center" upscale=True as im %}
