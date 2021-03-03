@@ -79,7 +79,7 @@ def profile(request, user_id):
 
 @login_required(login_url='auth/login/')
 def follow_index(request):
-    queryset = Follow.objects.filter(user=request.user)
+    queryset = request.user.follower.all()
     paginator = Paginator(queryset, PAGINATE_BY)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
@@ -112,7 +112,7 @@ def delete_subscription(request, author_id):
     data = {'success': 'true'}
     follow = Follow.objects.filter(
         user=request.user, author=author)
-    if not follow:
+    if not follow.exists():
         data['success'] = 'false'
     follow.delete()
     return JsonResponse(data)
@@ -154,8 +154,7 @@ def add_favorite(request):
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
     favorite = Favorites.objects.filter(user=request.user, recipes=recipe)
-    is_favorite = favorite.exists()
-    if is_favorite:
+    if favorite.exists():
         data['success'] = 'false'
     else:
         Favorites.objects.create(user=request.user, recipes=recipe)
@@ -167,10 +166,7 @@ def add_favorite(request):
 def delete_favorite(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
-    try:
-        favorite = Favorites.objects.filter(user=request.user, recipes=recipe)
-    except ObjectDoesNotExist:
-        data['success'] = 'false'
+    favorite = Favorites.objects.filter(user=request.user, recipes=recipe)
     if not favorite.exists():
         data['success'] = 'false'
     favorite.delete()
@@ -205,10 +201,7 @@ def add_purchase(request):
 def delete_purchase(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
-    try:
-        purchase = ShopList.objects.filter(user=request.user, recipes=recipe)
-    except ObjectDoesNotExist:
-        data['success'] = 'false'
+    purchase = ShopList.objects.filter(user=request.user, recipes=recipe)
     if not purchase.exists():
         data['success'] = 'false'
     purchase.delete()
@@ -238,10 +231,10 @@ def new_recipe(request):
             recipe.author = request.user
             recipe.save()
             for tag in tags:
-                recipe.tags.add(Tag.objects.get(slug=tag))
+                recipe.tags.add(get_object_or_404(Tag, slug=tag))
             ing = []
             for ingredient, value in zip(ingredients, value_ing):
-                product = Products.objects.get(title=ingredient)
+                product = get_object_or_404(Products, title=ingredient)
                 ing.append(Ingredient(ingredient=product, recipe=recipe,
                                       amount=value))
             Ingredient.objects.bulk_create(ing)
@@ -275,10 +268,10 @@ def edit_recipe(request, recipe_id):
         recipe.tags.clear()
         recipe.ingredients.clear()
         for tag in tags:
-            recipe.tags.add(Tag.objects.get(slug=tag))
+            recipe.tags.add(get_object_or_404(Tag, slug=tag))
         ing = []
         for ingredient, value in zip(ingredients, value_ing):
-            product = Products.objects.get(title=ingredient)
+            product = get_object_or_404(Products, title=ingredient)
             ing.append(Ingredient(ingredient=product, recipe=recipe,
                                   amount=value.replace(',', '.')))
         Ingredient.objects.bulk_create(ing)
