@@ -16,42 +16,19 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
+from foodgram.settings import PAGINATE_BY
+
 from .forms import RecipeForm
 from .models import (
     Favorites, Follow, Ingredient, Products, Recipe, ShopList, Tag, User)
-
-
-def _extend_context(context, user):
-    context['purchase_list'] = Recipe.objects.filter(purchase_by=user)
-    context['favorites'] = Recipe.objects.filter(favorite_by=user)
-    return context
-
-
-def _add_subscription_status(context, user, author):
-    context['is_subscribed'] = Follow.objects.filter(
-        user=user, author=author
-    ).exists()
-    return context
-
-
-def tag_filter(model, tags):
-    if tags:
-        return model.objects.prefetch_related(
-                'author', 'tags'
-            ).filter(
-                tags__slug__in=tags
-            ).distinct()
-    else:
-        return model.objects.prefetch_related(
-                'author', 'tags'
-            ).all()
+from .utils import add_subscription_status, extend_context, tag_filter
 
 
 @require_GET
 def index(request):
     tags = request.GET.getlist('tag')
     recipe_list = tag_filter(Recipe, tags)
-    paginator = Paginator(recipe_list, 6)
+    paginator = Paginator(recipe_list, PAGINATE_BY)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     context = {
@@ -62,7 +39,7 @@ def index(request):
     user = request.user
     if user.is_authenticated:
         context['active'] = 'recipe'
-        _extend_context(context, user)
+        extend_context(context, user)
     return render(request, 'index.html', context)
 
 
@@ -74,8 +51,8 @@ def recipe_detail(request, recipe_id):
     }
     user = request.user
     if user.is_authenticated:
-        _add_subscription_status(context, user, recipe.author)
-        _extend_context(context, user)
+        add_subscription_status(context, user, recipe.author)
+        extend_context(context, user)
     return render(request, 'recipes/recipe_detail.html', context)
 
 
@@ -84,7 +61,7 @@ def profile(request, user_id):
     author = get_object_or_404(User, id=user_id)
     tags = request.GET.getlist('tag')
     recipe_list = tag_filter(Recipe, tags)
-    paginator = Paginator(recipe_list.filter(author=author), 6)
+    paginator = Paginator(recipe_list.filter(author=author), PAGINATE_BY)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     context = {
@@ -95,15 +72,15 @@ def profile(request, user_id):
     }
     user = request.user
     if user.is_authenticated:
-        _add_subscription_status(context, user, author)
-        _extend_context(context, user)
+        add_subscription_status(context, user, author)
+        extend_context(context, user)
     return render(request, 'recipes/profile.html', context)
 
 
 @login_required(login_url='auth/login/')
 def follow_index(request):
     queryset = Follow.objects.filter(user=request.user)
-    paginator = Paginator(queryset, 6)
+    paginator = Paginator(queryset, PAGINATE_BY)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     return render(request,
@@ -156,7 +133,7 @@ def favorite_index(request):
         recipe_list = recipe_lists.prefetch_related(
                 'author', 'tags'
             ).all()
-    paginator = Paginator(recipe_list, 6)
+    paginator = Paginator(recipe_list, PAGINATE_BY)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     context = {
@@ -165,7 +142,7 @@ def favorite_index(request):
         'paginator': paginator
     }
     if user.is_authenticated:
-        _extend_context(context, user)
+        extend_context(context, user)
     return render(request, 'recipes/favorites.html', context)
 
 
@@ -246,8 +223,7 @@ def get_ingredients(request):
         title__startswith=query
     ).values(
         'title', 'unit'))
-    a = JsonResponse(data, safe=False)
-    return a
+    return JsonResponse(data, safe=False)
 
 
 @login_required(login_url='auth/login/')
@@ -279,46 +255,44 @@ def edit_recipe(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
     if recipe.author != request.user:
         return redirect('recipe', id=recipe_id)
-    if recipe.author == request.user:
-        form = RecipeForm(request.POST or None, files=request.FILES or None,
-                          instance=recipe)
-        recipe_tags = Tag.objects.filter(recipe=recipe_id)
-        tags = [el.slug for el in recipe_tags]
-        recipe_ingredients = Ingredient.objects.filter(recipe=recipe_id)
-        context = {'form': form,
-                   'tags': tags,
-                   "ing_list": recipe_ingredients,
-                   'is_created': True,
-                   'recipe_id': recipe.id}
-        if form.is_valid():
-            recipe = form.save(commit=False)
-            recipe.author = request.user
-            recipe.save()
-            tags = request.POST.getlist('tags')
-            ingredients = request.POST.getlist('nameIngredient')
-            value_ing = request.POST.getlist('valueIngredient')
-            recipe.tags.clear()
-            recipe.ingredients.clear()
-            for tag in tags:
-                recipe.tags.add(Tag.objects.get(slug=tag))
-            ing = []
-            for ingredient, value in zip(ingredients, value_ing):
-                product = Products.objects.get(title=ingredient)
-                ing.append(Ingredient(ingredient=product, recipe=recipe,
-                                      amount=value.replace(',', '.')))
-            Ingredient.objects.bulk_create(ing)
-            return redirect('index')
-        return render(request, 'recipes/recipe_new.html', context)
+    form = RecipeForm(request.POST or None, files=request.FILES or None,
+                      instance=recipe)
+    recipe_tags = Tag.objects.filter(recipe=recipe_id)
+    tags = [el.slug for el in recipe_tags]
+    recipe_ingredients = Ingredient.objects.filter(recipe=recipe_id)
+    context = {'form': form,
+               'tags': tags,
+               "ing_list": recipe_ingredients,
+               'is_created': True,
+               'recipe_id': recipe.id}
+    if form.is_valid():
+        recipe = form.save(commit=False)
+        recipe.author = request.user
+        recipe.save()
+        tags = request.POST.getlist('tags')
+        ingredients = request.POST.getlist('nameIngredient')
+        value_ing = request.POST.getlist('valueIngredient')
+        recipe.tags.clear()
+        recipe.ingredients.clear()
+        for tag in tags:
+            recipe.tags.add(Tag.objects.get(slug=tag))
+        ing = []
+        for ingredient, value in zip(ingredients, value_ing):
+            product = Products.objects.get(title=ingredient)
+            ing.append(Ingredient(ingredient=product, recipe=recipe,
+                                  amount=value.replace(',', '.')))
+        Ingredient.objects.bulk_create(ing)
+        return redirect('index')
+    return render(request, 'recipes/recipe_new.html', context)
 
 
 @login_required(login_url='auth/login/')
 @require_GET
 def delete_recipe(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
-    if recipe.author != request.user:
-        return redirect("index")
-    recipe.delete()
-    return redirect('index')
+    if recipe.author == request.user:
+        recipe.delete()
+        return redirect('index')
 
 
 @login_required
@@ -329,7 +303,7 @@ def download_pdf(request):
     user = get_object_or_404(User, username=request.user)
     ing_dict = {}
     shop_list = ShopList.objects.filter(user=user)
-    if len(shop_list) == 0:
+    if shop_list.count() == 0:
         return redirect('purchases')
     for el in shop_list:
         ingredients = Ingredient.objects.filter(recipe=el.recipes.id)
