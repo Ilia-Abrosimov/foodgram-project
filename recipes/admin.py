@@ -30,7 +30,7 @@ class FollowAdmin(admin.ModelAdmin):
 
 
 class FavoritesAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipes', 'created')
+    list_display = ('user', 'recipe', 'created')
 
 
 class ShoplistAdmin(admin.ModelAdmin):
