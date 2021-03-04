@@ -3,6 +3,12 @@ from django import template
 
 register = template.Library()
 
+TAGS = {
+        'breakfast': 'orange',
+        'lunch': 'green',
+        'dinner': 'purple'
+    }
+
 
 @register.filter
 def url_with_get(request, page):
@@ -13,11 +19,7 @@ def url_with_get(request, page):
 
 @register.filter
 def add_color(tag):
-    colors = {
-        'breakfast': 'orange',
-        'lunch': 'green',
-        'dinner': 'purple'
-    }
+    colors = TAGS
     return colors[tag.slug]
 
 

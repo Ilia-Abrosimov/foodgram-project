@@ -2,12 +2,12 @@
     <nav class="nav">
         <div class="nav__container container">
             <ul class="nav__items list">
-                <li class="nav__item{% if request.path == '/' %} nav__item_active{% endif %}"><a href="{% url 'index' %}" class="nav__link link">Рецепты</a></li>
+                <li class="nav__item{% if request.resolver_match.url_name == 'index' %} nav__item_active{% endif %}"><a href="{% url 'index' %}" class="nav__link link">Рецепты</a></li>
                 {% if request.user.is_authenticated %}
-                  <li class="nav__item{% if request.path == '/follows' %} nav__item_active{% endif %}"><a href="{% url 'follows' %}" class="nav__link link">Мои подписки</a></li>
-                  <li class="nav__item{% if request.path == '/new/' %} nav__item_active{% endif %}"><a href="{% url 'new' %}" class="nav__link link">Создать рецепт</a></li>
-                  <li class="nav__item{% if request.path == '/favorites/' %} nav__item_active{% endif %}"><a href="{% url 'favorite' %}" class="nav__link link">Избранное</a></li>
-                  <li class="nav__item{% if request.path == '/purchases/' %} nav__item_active{% endif %}"><a href="{% url 'purchases' %}" class="nav__link link">Список покупок</a> <span class="badge badge_style_blue nav__badge" id="counter">{% if user.shop_list.count %}{{ user.shop_list.count }}{% endif %}</span>
+                  <li class="nav__item{% if request.resolver_match.url_name == 'follows' %} nav__item_active{% endif %}"><a href="{% url 'follows' %}" class="nav__link link">Мои подписки</a></li>
+                  <li class="nav__item{% if request.resolver_match.url_name == 'new' %} nav__item_active{% endif %}"><a href="{% url 'new' %}" class="nav__link link">Создать рецепт</a></li>
+                  <li class="nav__item{% if request.resolver_match.url_name == 'favorite' %} nav__item_active{% endif %}"><a href="{% url 'favorite' %}" class="nav__link link">Избранное</a></li>
+                  <li class="nav__item{% if request.resolver_match.url_name == 'purchases' %} nav__item_active{% endif %}"><a href="{% url 'purchases' %}" class="nav__link link">Список покупок</a> <span class="badge badge_style_blue nav__badge" id="counter">{% if user.shop_list.count %}{{ user.shop_list.count }}{% endif %}</span>
                 {% endif %}
             </ul>
             <ul class="nav__items list">

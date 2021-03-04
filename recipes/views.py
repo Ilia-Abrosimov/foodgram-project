@@ -221,24 +221,22 @@ def get_ingredients(request):
 @login_required(login_url='auth/login/')
 def new_recipe(request):
     form = RecipeForm(request.POST or None, files=request.FILES or None)
-    if request.method == "POST":
-        tags = request.POST.getlist('tags')
-        ingredients = request.POST.getlist('nameIngredient')
-        value_ing = request.POST.getlist('valueIngredient')
-        if form.is_valid():
-            recipe = form.save(commit=False)
-            recipe.author = request.user
-            recipe.save()
-            for tag in tags:
-                recipe.tags.add(get_object_or_404(Tag, slug=tag))
-            ing = []
-            for ingredient, value in zip(ingredients, value_ing):
-                product = get_object_or_404(Products, title=ingredient)
-                ing.append(Ingredient(ingredient=product, recipe=recipe,
-                                      amount=value))
-            Ingredient.objects.bulk_create(ing)
-            return redirect('index')
-        return render(request, 'recipes/recipe_new.html', {'form': form})
+    tags = request.POST.getlist('tags')
+    ingredients = request.POST.getlist('nameIngredient')
+    value_ing = request.POST.getlist('valueIngredient')
+    if form.is_valid():
+        recipe = form.save(commit=False)
+        recipe.author = request.user
+        recipe.save()
+        for tag in tags:
+            recipe.tags.add(get_object_or_404(Tag, slug=tag))
+        ing = []
+        for ingredient, value in zip(ingredients, value_ing):
+            product = get_object_or_404(Products, title=ingredient)
+            ing.append(Ingredient(ingredient=product, recipe=recipe,
+                                  amount=value))
+        Ingredient.objects.bulk_create(ing)
+        return redirect('index')
     return render(request, 'recipes/recipe_new.html', {'form': form})
 
 
@@ -249,8 +247,7 @@ def edit_recipe(request, recipe_id):
         return redirect('recipe', id=recipe_id)
     form = RecipeForm(request.POST or None, files=request.FILES or None,
                       instance=recipe)
-    recipe_tags = Tag.objects.filter(recipe=recipe_id)
-    tags = [el.slug for el in recipe_tags]
+    tags = Tag.objects.filter(recipe=recipe_id).values_list('slug', flat=True)
     recipe_ingredients = Ingredient.objects.filter(recipe=recipe_id)
     context = {'form': form,
                'tags': tags,
