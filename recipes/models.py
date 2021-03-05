@@ -16,7 +16,7 @@ class Tag(models.Model):
         return self.title
 
 
-class Products(models.Model):
+class Product(models.Model):
     title = models.CharField(max_length=100)
     unit = models.CharField(max_length=10)
 
@@ -38,9 +38,10 @@ class Follow(models.Model):
 
     class Meta:
         db_table = 'posts_follow'
-        unique_together = ['user', 'author']
         verbose_name_plural = 'Подписки'
         verbose_name = 'Подписки'
+        constraints = [models.UniqueConstraint(fields=["user", "author"],
+                                               name="follow_unique")]
 
     def __str__(self):
         return f'{self.author}'
@@ -48,13 +49,13 @@ class Follow(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE,
-                               related_name='recipe')
+                               related_name='recipes')
     title = models.CharField(max_length=50)
     image = models.ImageField(upload_to='recipes/', blank=True, null=True)
     description = models.TextField()
-    ingredients = models.ManyToManyField(Products, through='Ingredient',
-                                         related_name='recipe')
-    tags = models.ManyToManyField(Tag, blank=True, related_name='recipe')
+    ingredients = models.ManyToManyField(Product, through='Ingredient',
+                                         related_name='recipes')
+    tags = models.ManyToManyField(Tag, blank=True, related_name='recipes')
     time = models.PositiveIntegerField()
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     favorite_by = models.ManyToManyField(User, through='Favorites',
@@ -75,13 +76,15 @@ class Recipe(models.Model):
 
 class Ingredient(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Products, on_delete=models.CASCADE)
-    amount = models.FloatField()
+    ingredient = models.ForeignKey(Product, on_delete=models.CASCADE)
+    amount = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = ('ingredient', 'amount', 'recipe')
         verbose_name_plural = 'Продукты'
         verbose_name = 'Продукты'
+        constraints = [models.UniqueConstraint(
+            fields=["ingredient", "amount", 'recipe'],
+            name="ingredient_unique")]
 
     def __str__(self):
         return f'{self.amount}'
@@ -98,7 +101,7 @@ class Favorites(models.Model):
         verbose_name = 'Избранное'
 
     def __str__(self):
-        return f'{self.recipes}'
+        return f'{self.recipe}'
 
 
 class ShopList(models.Model):

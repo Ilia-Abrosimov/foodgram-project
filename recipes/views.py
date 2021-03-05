@@ -19,7 +19,7 @@ from foodgram.settings import PAGINATE_BY
 
 from .forms import RecipeForm
 from .models import (
-    Favorites, Follow, Ingredient, Products, Recipe, ShopList, Tag, User)
+    Favorites, Follow, Ingredient, Product, Recipe, ShopList, Tag, User)
 from .utils import add_subscription_status, extend_context, tag_filter
 
 
@@ -152,11 +152,11 @@ def add_favorite(request):
     recipe_id = json_data['id']
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
-    favorite = Favorites.objects.filter(user=request.user, recipes=recipe)
+    favorite = Favorites.objects.filter(user=request.user, recipe=recipe)
     if favorite.exists():
         data['success'] = 'false'
     else:
-        Favorites.objects.create(user=request.user, recipes=recipe)
+        Favorites.objects.create(user=request.user, recipe=recipe)
     return JsonResponse(data)
 
 
@@ -165,7 +165,7 @@ def add_favorite(request):
 def delete_favorite(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
-    favorite = Favorites.objects.filter(user=request.user, recipes=recipe)
+    favorite = Favorites.objects.filter(user=request.user, recipe=recipe)
     if not favorite.exists():
         data['success'] = 'false'
     favorite.delete()
@@ -211,7 +211,7 @@ def delete_purchase(request, recipe_id):
 @require_GET
 def get_ingredients(request):
     query = unquote(request.GET.get('query'))
-    data = list(Products.objects.filter(
+    data = list(Product.objects.filter(
         title__startswith=query
     ).values(
         'title', 'unit'))
@@ -232,7 +232,7 @@ def new_recipe(request):
             recipe.tags.add(get_object_or_404(Tag, slug=tag))
         ing = []
         for ingredient, value in zip(ingredients, value_ing):
-            product = get_object_or_404(Products, title=ingredient)
+            product = get_object_or_404(Product, title=ingredient)
             ing.append(Ingredient(ingredient=product, recipe=recipe,
                                   amount=value))
         Ingredient.objects.bulk_create(ing)
@@ -247,7 +247,7 @@ def edit_recipe(request, recipe_id):
         return redirect('recipe', id=recipe_id)
     form = RecipeForm(request.POST or None, files=request.FILES or None,
                       instance=recipe)
-    tags = Tag.objects.filter(recipe=recipe_id).values_list('slug', flat=True)
+    tags = Tag.objects.filter(recipes=recipe_id).values_list('slug', flat=True)
     recipe_ingredients = Ingredient.objects.filter(recipe=recipe_id)
     context = {'form': form,
                'tags': tags,
@@ -267,7 +267,7 @@ def edit_recipe(request, recipe_id):
             recipe.tags.add(get_object_or_404(Tag, slug=tag))
         ing = []
         for ingredient, value in zip(ingredients, value_ing):
-            product = get_object_or_404(Products, title=ingredient)
+            product = get_object_or_404(Product, title=ingredient)
             ing.append(Ingredient(ingredient=product, recipe=recipe,
                                   amount=value.replace(',', '.')))
         Ingredient.objects.bulk_create(ing)
