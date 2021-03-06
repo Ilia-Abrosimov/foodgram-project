@@ -197,7 +197,7 @@ def add_purchase(request):
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
     purchase = ShopList.objects.filter(user=request.user, recipes=recipe)
-    if not purchase.exists():
+    if purchase.exists():
         data['success'] = 'false'
     else:
         ShopList.objects.create(user=request.user, recipes=recipe)
