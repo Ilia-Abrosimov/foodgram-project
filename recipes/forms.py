@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Recipe, Tag
+from .models import Recipe, Tag, Product
 
 
 class RecipeForm(forms.ModelForm):
@@ -13,4 +13,44 @@ class RecipeForm(forms.ModelForm):
 
     class Meta:
         model = Recipe
-        fields = ('title', 'tags', 'time', 'description', 'image')
+        fields = ('title', 'tags', 'ingredients', 'time', 'description',
+                  'image')
+
+    def clean_ingredients(self):
+        ingredient_names = self.data.getlist('nameIngredient')
+        ingredient_units = self.data.getlist('unitsIngredient')
+        ingredient_amounts = self.data.getlist('valueIngredient')
+        ingredients_clean = []
+        for ingredient in zip(ingredient_names, ingredient_units,
+                              ingredient_amounts):
+            if not int(ingredient[2]) > 0:
+                raise forms.ValidationError('Количество ингредиентов должно '
+                                            'быть положительным и не нулевым')
+            elif not Product.objects.filter(title=ingredient[0]).exists():
+                raise forms.ValidationError(
+                    'Ингредиенты должны быть из списка')
+            else:
+                ingredients_clean.append({'title': ingredient[0],
+                                          'unit': ingredient[1],
+                                          'amount': ingredient[2]})
+        if len(ingredients_clean) == 0:
+            raise forms.ValidationError('Добавьте ингредиент')
+        return ingredients_clean
+
+    def clean_name(self):
+        data = self.cleaned_data['name']
+        if len(data) == 0:
+            raise forms.ValidationError('Добавьте название рецепта')
+        return data
+
+    def clean_description(self):
+        data = self.cleaned_data['description']
+        if len(data) == 0:
+            raise forms.ValidationError('Добавьте описание рецепта')
+        return data
+
+    def clean_tags(self):
+        data = self.cleaned_data['tags']
+        if len(data) == 0:
+            raise forms.ValidationError('Добавьте тег')
+        return data

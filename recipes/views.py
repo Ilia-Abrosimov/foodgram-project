@@ -18,9 +18,10 @@ from reportlab.pdfgen import canvas
 from foodgram.settings import PAGINATE_BY
 
 from .forms import RecipeForm
-from .models import (
-    Favorites, Follow, Ingredient, Product, Recipe, ShopList, Tag, User)
-from .utils import add_subscription_status, extend_context, tag_filter
+from .models import (Favorites, Follow, Ingredient, Product, Recipe, ShopList,
+                     Tag, User)
+from .utils import (add_subscription_status, extend_context,
+                    get_ingredients_from_form, tag_filter)
 
 
 @require_GET
@@ -91,13 +92,16 @@ def follow_index(request):
 
 @login_required(login_url='auth/login/')
 @require_POST
-def subscription(request):
+def add_subscription(request):
     json_data = json.loads(request.body.decode())
-    author = get_object_or_404(User, id=json_data['id'])
-    is_exist = Follow.objects.filter(
-        user=request.user, author=author).exists()
+    author_id = json_data.get('id')
+    if not author_id:
+        return JsonResponse({'success': 'false', 'massage': 'id not found'},
+                            status=400)
+    author = get_object_or_404(User, id=author_id)
+    follow = Follow.objects.filter(user=request.user, author=author)
     data = {'success': 'true'}
-    if is_exist:
+    if follow.exists():
         data['success'] = 'false'
     else:
         Follow.objects.create(user=request.user, author=author)
@@ -149,7 +153,10 @@ def favorite_index(request):
 @require_POST
 def add_favorite(request):
     json_data = json.loads(request.body.decode())
-    recipe_id = json_data['id']
+    recipe_id = json_data.get('id')
+    if not recipe_id:
+        return JsonResponse({'success': 'false', 'massage': 'id not found'},
+                            status=400)
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
     favorite = Favorites.objects.filter(user=request.user, recipe=recipe)
@@ -183,12 +190,14 @@ def purchases(request):
 @require_POST
 def add_purchase(request):
     json_data = json.loads(request.body.decode())
-    recipe_id = json_data['id']
+    recipe_id = json_data.get('id')
+    if not recipe_id:
+        return JsonResponse({'success': 'false', 'massage': 'id not found'},
+                            status=400)
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
     purchase = ShopList.objects.filter(user=request.user, recipes=recipe)
-    is_favorite = purchase.exists()
-    if is_favorite:
+    if not purchase.exists():
         data['success'] = 'false'
     else:
         ShopList.objects.create(user=request.user, recipes=recipe)
@@ -219,23 +228,17 @@ def get_ingredients(request):
 
 
 @login_required(login_url='auth/login/')
+@require_http_methods(['GET', 'POST'])
 def new_recipe(request):
     form = RecipeForm(request.POST or None, files=request.FILES or None)
-    tags = request.POST.getlist('tags')
-    ingredients = request.POST.getlist('nameIngredient')
-    value_ing = request.POST.getlist('valueIngredient')
     if form.is_valid():
         recipe = form.save(commit=False)
         recipe.author = request.user
-        recipe.save()
-        for tag in tags:
-            recipe.tags.add(get_object_or_404(Tag, slug=tag))
-        ing = []
-        for ingredient, value in zip(ingredients, value_ing):
-            product = get_object_or_404(Product, title=ingredient)
-            ing.append(Ingredient(ingredient=product, recipe=recipe,
-                                  amount=value))
-        Ingredient.objects.bulk_create(ing)
+        ingredients = form.cleaned_data['ingredients']
+        form.cleaned_data['ingredients'] = []
+        form.save()
+        Ingredient.objects.bulk_create(
+            get_ingredients_from_form(ingredients, recipe))
         return redirect('index')
     return render(request, 'recipes/recipe_new.html', {'form': form})
 
@@ -247,31 +250,18 @@ def edit_recipe(request, recipe_id):
         return redirect('recipe', id=recipe_id)
     form = RecipeForm(request.POST or None, files=request.FILES or None,
                       instance=recipe)
-    tags = Tag.objects.filter(recipes=recipe_id).values_list('slug', flat=True)
-    recipe_ingredients = Ingredient.objects.filter(recipe=recipe_id)
     context = {'form': form,
-               'tags': tags,
-               "ing_list": recipe_ingredients,
                'is_created': True,
                'recipe_id': recipe.id}
     if form.is_valid():
         recipe = form.save(commit=False)
         recipe.author = request.user
-        recipe.save()
-        tags = request.POST.getlist('tags')
-        ingredients = request.POST.getlist('nameIngredient')
-        value_ing = request.POST.getlist('valueIngredient')
-        recipe.tags.clear()
-        recipe.ingredients.clear()
-        for tag in tags:
-            recipe.tags.add(get_object_or_404(Tag, slug=tag))
-        ing = []
-        for ingredient, value in zip(ingredients, value_ing):
-            product = get_object_or_404(Product, title=ingredient)
-            ing.append(Ingredient(ingredient=product, recipe=recipe,
-                                  amount=value.replace(',', '.')))
-        Ingredient.objects.bulk_create(ing)
-        return redirect('index')
+        ingredients = form.cleaned_data['ingredients']
+        form.cleaned_data['ingredients'] = []
+        form.save()
+        Ingredient.objects.bulk_create(
+            get_ingredients_from_form(ingredients, recipe))
+        return redirect('recipe', recipe.id)
     return render(request, 'recipes/recipe_new.html', context)
 
 

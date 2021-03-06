@@ -48,3 +48,8 @@ def renew_tag_link(request, tag):
     else:
         request_copy.appendlist('tag', tag.slug)
     return request_copy.urlencode()
+
+
+@register.filter
+def tags_template(tags):
+    return tags.values_list('slug', flat=True)

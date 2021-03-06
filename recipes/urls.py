@@ -4,7 +4,7 @@ from .views import (
     AboutAuthorView, AboutTechView, add_favorite, add_purchase,
     delete_favorite, delete_purchase, delete_recipe, delete_subscription,
     download_pdf, edit_recipe, favorite_index, follow_index, get_ingredients,
-    index, new_recipe, profile, purchases, recipe_detail, subscription)
+    index, new_recipe, profile, purchases, recipe_detail, add_subscription)
 
 urlpatterns = [
     path('', index, name='index'),
@@ -13,7 +13,7 @@ urlpatterns = [
     path('recipes/<int:recipe_id>/delete/', delete_recipe, name='delete_recipe'),
     path('users/<int:user_id>/', profile, name='profile'),
     path('follows/', follow_index, name='follows'),
-    path('subscriptions/', subscription, name='subscription'),
+    path('subscriptions/', add_subscription, name='subscription'),
     path('subscriptions/<int:author_id>/', delete_subscription,
          name='delete_subscription'),
     path('favorites/', favorite_index, name='favorite'),

@@ -54,7 +54,7 @@ class Recipe(models.Model):
     image = models.ImageField(upload_to='recipes/', blank=True, null=True)
     description = models.TextField()
     ingredients = models.ManyToManyField(Product, through='Ingredient',
-                                         related_name='recipes')
+                                         related_name='recipes', blank=True)
     tags = models.ManyToManyField(Tag, blank=True, related_name='recipes')
     time = models.PositiveIntegerField()
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
