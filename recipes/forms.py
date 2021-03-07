@@ -23,9 +23,9 @@ class RecipeForm(forms.ModelForm):
         ingredients_clean = []
         for ingredient in zip(ingredient_names, ingredient_units,
                               ingredient_amounts):
-            if not int(ingredient[2]) > 0:
+            if int(ingredient[2]) < 0:
                 raise forms.ValidationError('Количество ингредиентов должно '
-                                            'быть положительным и не нулевым')
+                                            'быть больше нуля')
             elif not Product.objects.filter(title=ingredient[0]).exists():
                 raise forms.ValidationError(
                     'Ингредиенты должны быть из списка')
@@ -33,24 +33,24 @@ class RecipeForm(forms.ModelForm):
                 ingredients_clean.append({'title': ingredient[0],
                                           'unit': ingredient[1],
                                           'amount': ingredient[2]})
-        if len(ingredients_clean) == 0:
+        if not ingredients_clean:
             raise forms.ValidationError('Добавьте ингредиент')
         return ingredients_clean
 
     def clean_name(self):
-        data = self.cleaned_data['name']
-        if len(data) == 0:
+        data = self.cleaned_data['title']
+        if not data:
             raise forms.ValidationError('Добавьте название рецепта')
         return data
 
     def clean_description(self):
         data = self.cleaned_data['description']
-        if len(data) == 0:
+        if not data:
             raise forms.ValidationError('Добавьте описание рецепта')
         return data
 
     def clean_tags(self):
         data = self.cleaned_data['tags']
-        if len(data) == 0:
+        if not data:
             raise forms.ValidationError('Добавьте тег')
         return data

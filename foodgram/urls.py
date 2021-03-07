@@ -12,7 +12,7 @@ urlpatterns = [
 ]
 
 handler404 = "foodgram.views.page_not_found" # noqa
-handler500 = "posts.views.server_error" # noqa
+handler500 = "foodgram.views.server_error" # noqa
 
 
 if settings.DEBUG:
