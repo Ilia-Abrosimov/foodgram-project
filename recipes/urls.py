@@ -1,10 +1,10 @@
 from django.urls import path
 
-from .views import (
-    AboutAuthorView, AboutTechView, add_favorite, add_purchase,
-    delete_favorite, delete_purchase, delete_recipe, delete_subscription,
-    download_pdf, edit_recipe, favorite_index, follow_index, get_ingredients,
-    index, new_recipe, profile, purchases, recipe_detail, add_subscription)
+from .views import (add_favorite, add_purchase, add_subscription,
+                    delete_favorite, delete_purchase, delete_recipe,
+                    delete_subscription, download_pdf, edit_recipe,
+                    favorite_index, follow_index, get_ingredients, index,
+                    new_recipe, profile, purchases, recipe_detail)
 
 urlpatterns = [
     path('', index, name='index'),
@@ -25,6 +25,4 @@ urlpatterns = [
     path('ingredients', get_ingredients, name='ingredients'),
     path('new/', new_recipe, name='new'),
     path('download_shoplist/', download_pdf, name='download_purchases'),
-    path('about/author/', AboutAuthorView.as_view(), name='about-author'),
-    path('about/technology/', AboutTechView.as_view(), name='about-tech'),
 ]

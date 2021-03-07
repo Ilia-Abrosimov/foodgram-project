@@ -58,7 +58,7 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(Tag, blank=True, related_name='recipes')
     time = models.PositiveIntegerField()
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
-    favorite_by = models.ManyToManyField(User, through='Favorites',
+    favorite_by = models.ManyToManyField(User, through='Favourite',
                                          related_name='favorite_recipes',
                                          blank=True)
     purchase_by = models.ManyToManyField(User, through='ShopList',
@@ -90,7 +90,7 @@ class Ingredient(models.Model):
         return f'{self.amount}'
 
 
-class Favorites(models.Model):
+class Favourite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     created = models.DateTimeField('date published', auto_now_add=True)
@@ -106,7 +106,7 @@ class Favorites(models.Model):
 
 class ShopList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipes = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     created = models.DateTimeField('date of creation', auto_now_add=True)
 
     class Meta:
@@ -115,4 +115,4 @@ class ShopList(models.Model):
         verbose_name = 'Список покупок'
 
     def __str__(self):
-        return f'{self.recipes}'
+        return f'{self.recipe}'

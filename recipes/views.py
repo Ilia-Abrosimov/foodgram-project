@@ -9,7 +9,6 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
-from django.views.generic import TemplateView
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -18,7 +17,7 @@ from reportlab.pdfgen import canvas
 from foodgram.settings import PAGINATE_BY
 
 from .forms import RecipeForm
-from .models import (Favorites, Follow, Ingredient, Product, Recipe, ShopList,
+from .models import (Favourite, Follow, Ingredient, Product, Recipe, ShopList,
                      Tag, User)
 from .utils import (add_subscription_status, extend_context,
                     get_ingredients_from_form, tag_filter)
@@ -159,11 +158,11 @@ def add_favorite(request):
                             status=400)
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
-    favorite = Favorites.objects.filter(user=request.user, recipe=recipe)
+    favorite = Favourite.objects.filter(user=request.user, recipe=recipe)
     if favorite.exists():
         data['success'] = 'false'
     else:
-        Favorites.objects.create(user=request.user, recipe=recipe)
+        Favourite.objects.create(user=request.user, recipe=recipe)
     return JsonResponse(data)
 
 
@@ -172,7 +171,7 @@ def add_favorite(request):
 def delete_favorite(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
-    favorite = Favorites.objects.filter(user=request.user, recipe=recipe)
+    favorite = Favourite.objects.filter(user=request.user, recipe=recipe)
     if not favorite.exists():
         data['success'] = 'false'
     favorite.delete()
@@ -196,11 +195,11 @@ def add_purchase(request):
                             status=400)
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
-    purchase = ShopList.objects.filter(user=request.user, recipes=recipe)
+    purchase = ShopList.objects.filter(user=request.user, recipe=recipe)
     if purchase.exists():
         data['success'] = 'false'
     else:
-        ShopList.objects.create(user=request.user, recipes=recipe)
+        ShopList.objects.create(user=request.user, recipe=recipe)
     return JsonResponse(data)
 
 
@@ -209,7 +208,7 @@ def add_purchase(request):
 def delete_purchase(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
     data = {'success': 'true'}
-    purchase = ShopList.objects.filter(user=request.user, recipes=recipe)
+    purchase = ShopList.objects.filter(user=request.user, recipe=recipe)
     if not purchase.exists():
         data['success'] = 'false'
     purchase.delete()
@@ -285,7 +284,7 @@ def download_pdf(request):
     if shop_list.count() == 0:
         return redirect('purchases')
     for el in shop_list:
-        ingredients = Ingredient.objects.filter(recipe=el.recipes.id)
+        ingredients = Ingredient.objects.filter(recipe=el.recipe.id)
         for ingredient in ingredients:
             name = ingredient.ingredient.title
             count = ingredient.amount
@@ -313,11 +312,3 @@ def download_pdf(request):
     p.showPage()
     p.save()
     return response
-
-
-class AboutAuthorView(TemplateView):
-    template_name = 'static_templates/about-author.html'
-
-
-class AboutTechView(TemplateView):
-    template_name = 'static_templates/about-tech.html'

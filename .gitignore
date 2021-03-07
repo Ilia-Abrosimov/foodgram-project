@@ -130,5 +130,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-.idea/foodgram-project.iml
+/.idea
 api
