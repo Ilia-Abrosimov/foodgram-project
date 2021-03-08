@@ -1,6 +1,7 @@
 from django import forms
 
-from .models import Recipe, Tag, Product
+from .models import Ingredient, Product, Recipe, Tag
+from .utils import get_ingredients_from_form
 
 
 class RecipeForm(forms.ModelForm):
@@ -37,7 +38,7 @@ class RecipeForm(forms.ModelForm):
             raise forms.ValidationError('Добавьте ингредиент')
         return ingredients_clean
 
-    def clean_name(self):
+    def clean_title(self):
         data = self.cleaned_data['title']
         if not data:
             raise forms.ValidationError('Добавьте название рецепта')
@@ -54,3 +55,14 @@ class RecipeForm(forms.ModelForm):
         if not data:
             raise forms.ValidationError('Добавьте тег')
         return data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.author = self.initial['author']
+        instance.save()
+        ingredients = self.cleaned_data['ingredients']
+        self.cleaned_data['ingredients'] = []
+        self.save_m2m()
+        Ingredient.objects.bulk_create(
+            get_ingredients_from_form(ingredients, instance))
+        return instance

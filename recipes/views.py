@@ -19,8 +19,7 @@ from foodgram.settings import PAGINATE_BY
 from .forms import RecipeForm
 from .models import (Favourite, Follow, Ingredient, Product, Recipe, ShopList,
                      Tag, User)
-from .utils import (add_subscription_status, extend_context,
-                    get_ingredients_from_form, tag_filter)
+from .utils import add_subscription_status, extend_context, tag_filter
 
 
 @require_GET
@@ -229,15 +228,10 @@ def get_ingredients(request):
 @login_required(login_url='auth/login/')
 @require_http_methods(['GET', 'POST'])
 def new_recipe(request):
-    form = RecipeForm(request.POST or None, files=request.FILES or None)
+    form = RecipeForm(request.POST or None, files=request.FILES or None,
+                      initial={'author': request.user})
     if form.is_valid():
-        recipe = form.save(commit=False)
-        recipe.author = request.user
-        ingredients = form.cleaned_data['ingredients']
-        form.cleaned_data['ingredients'] = []
         form.save()
-        Ingredient.objects.bulk_create(
-            get_ingredients_from_form(ingredients, recipe))
         return redirect('index')
     return render(request, 'recipes/recipe_new.html', {'form': form})
 
@@ -248,18 +242,12 @@ def edit_recipe(request, recipe_id):
     if recipe.author != request.user:
         return redirect('recipe', id=recipe_id)
     form = RecipeForm(request.POST or None, files=request.FILES or None,
-                      instance=recipe)
+                      instance=recipe, initial={'author': request.user})
     context = {'form': form,
                'is_created': True,
                'recipe_id': recipe.id}
     if form.is_valid():
-        recipe = form.save(commit=False)
-        recipe.author = request.user
-        ingredients = form.cleaned_data['ingredients']
-        form.cleaned_data['ingredients'] = []
         form.save()
-        Ingredient.objects.bulk_create(
-            get_ingredients_from_form(ingredients, recipe))
         return redirect('recipe', recipe.id)
     return render(request, 'recipes/recipe_new.html', context)
 
@@ -270,7 +258,7 @@ def delete_recipe(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
     if recipe.author == request.user:
         recipe.delete()
-        return redirect('index')
+    return redirect('index')
 
 
 @login_required

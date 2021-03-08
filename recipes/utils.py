@@ -1,3 +1,5 @@
+from django.shortcuts import get_object_or_404
+
 from .models import Follow, Ingredient, Product, Recipe
 
 
@@ -30,7 +32,7 @@ def tag_filter(model, tags):
 def get_ingredients_from_form(ingredients, recipe):
     ingredients_for_save = []
     for ingredient in ingredients:
-        product = Product.objects.get(title=ingredient['title'])
+        product = get_object_or_404(Product, title=ingredient['title'])
         ingredients_for_save.append(
             Ingredient(recipe=recipe, ingredient=product,
                        amount=ingredient['amount']))
