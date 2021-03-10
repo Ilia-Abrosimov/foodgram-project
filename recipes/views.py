@@ -243,9 +243,13 @@ def edit_recipe(request, recipe_id):
         return redirect('recipe', id=recipe_id)
     form = RecipeForm(request.POST or None, files=request.FILES or None,
                       instance=recipe, initial={'author': request.user})
+    tags = recipe.tags.all()
+    ingredients = Ingredient.objects.filter(recipe=recipe).all()
     context = {'form': form,
                'is_created': True,
-               'recipe_id': recipe.id}
+               'recipe_id': recipe.id,
+               'tags': tags,
+               'ingredients': ingredients}
     if form.is_valid():
         form.save()
         return redirect('recipe', recipe.id)
