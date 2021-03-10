@@ -75,7 +75,7 @@ def profile(request, user_id):
     return render(request, 'recipes/profile.html', context)
 
 
-@login_required(login_url='auth/login/')
+@login_required(login_url='/auth/login/')
 def follow_index(request):
     queryset = request.user.follower.all()
     paginator = Paginator(queryset, PAGINATE_BY)
@@ -119,7 +119,7 @@ def delete_subscription(request, author_id):
     return JsonResponse(data)
 
 
-@login_required(login_url='auth/login/')
+@login_required(login_url='/auth/login/')
 def favorite_index(request):
     tags = request.GET.getlist('tag')
     user = request.user
@@ -177,7 +177,7 @@ def delete_favorite(request, recipe_id):
     return JsonResponse(data)
 
 
-@login_required(login_url='auth/login/')
+@login_required(login_url='/auth/login/')
 def purchases(request):
     user = request.user
     recipes = user.shop_list.all()
@@ -225,7 +225,7 @@ def get_ingredients(request):
     return JsonResponse(data, safe=False)
 
 
-@login_required(login_url='auth/login/')
+@login_required(login_url='/auth/login/')
 @require_http_methods(['GET', 'POST'])
 def new_recipe(request):
     form = RecipeForm(request.POST or None, files=request.FILES or None,
@@ -236,7 +236,7 @@ def new_recipe(request):
     return render(request, 'recipes/recipe_new.html', {'form': form})
 
 
-@login_required(login_url='auth/login/')
+@login_required(login_url='/auth/login/')
 def edit_recipe(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
     if recipe.author != request.user:
@@ -252,7 +252,7 @@ def edit_recipe(request, recipe_id):
     return render(request, 'recipes/recipe_new.html', context)
 
 
-@login_required(login_url='auth/login/')
+@login_required(login_url='/auth/login/')
 @require_GET
 def delete_recipe(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
