@@ -1,5 +1,5 @@
 Django==2.2
-Pillow==8.1.0
+Pillow==9.0.1
 pytz==2020.5
 reportlab==3.5.59
 sorl-thumbnail==12.7.0
